@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleDisplayName</key>
+    <string>Nocrastinate</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>nocrastinate</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$(FLUTTER_BUILD_NAME)</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <!-- Google Sign In URL Scheme -->
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>REVERSED_CLIENT_ID</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.956440679907-h4gvmhj5e5atciaqukvuk8790204re7u</string>
+            </array>
+        </dict>
+        <!-- Apple Sign In URL Scheme (Your Bundle ID) -->
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>com.nocrastinate.app</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.nocrastinate.app</string>
+            </array>
+        </dict>
+    </array>
+    <key>CFBundleVersion</key>
+    <string>$(FLUTTER_BUILD_NUMBER)</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>googlegmail</string>
+        <string>googlemail</string>
+        <string>googleplus</string>
+        <string>googledrive</string>
+        <string>googlephotos</string>
+        <string>googleearth</string>
+        <string>googletranslate</string>
+        <string>googlestreetview</string>
+        <string>googleremotedesktop</string>
+        <string>googlechrome</string>
+        <string>googlechromes</string>
+        <string>googleadwords</string>
+    </array>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    <key>UIMainStoryboardFile</key>
+    <string>Main</string>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <!-- App Groups for Widget Support -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.nocrastinate.widget</string>
+    </array>
+    <!-- Privacy Descriptions (Required by Apple) -->
+    <key>NSUserTrackingUsageDescription</key>
+    <string>This allows us to provide you with a personalized experience</string>
+    <key>NSCameraUsageDescription</key>
+    <string>This app needs camera access to take photos</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to your photo library</string>
+</dict>
+</plist>

@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "956440679907",
+    "project_id": "nocrastinate-40021",
+    "storage_bucket": "nocrastinate-40021.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956440679907:android:079b4d4ba0dde34a483cd6",
+        "android_client_info": {
+          "package_name": "com.info.nocrastinate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "956440679907-kfs6tkcv21pjll6keq1jtcivcqgaqik2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.info.nocrastinate",
+            "certificate_hash": "1766aaf340feb889c8e42bcff59319cbd7833100"
+          }
+        },
+        {
+          "client_id": "956440679907-nmbfj3k09uuvekruinti3ptibcqq4262.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.info.nocrastinate",
+            "certificate_hash": "4e9e6892e17ca79c9c7155a1c7c7f49f64bcc5b8"
+          }
+        },
+        {
+          "client_id": "956440679907-utohc6os07r5oefh7olsrt1amvd7mncv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABhXq43rnqZ1KKkWsnErc4zIA7Jr0PXJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "956440679907-utohc6os07r5oefh7olsrt1amvd7mncv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "956440679907-6gl5sjklkre2vedqur4chln52o12s71d.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.info.nocrastinate"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
