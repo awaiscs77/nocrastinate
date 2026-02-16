@@ -16,6 +16,9 @@ import 'ApiServices/InAppPurchaseService.dart';
 import 'ApiServices/LocalNotificationService.dart';
 import 'Manager/MoodCheckinManager.dart';
 import 'Manager/WidgetManager.dart';
+import 'Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/GratitudeJournal/WhyMakesGratefulScreen.dart';
+import 'Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/GratitudeJournal/WriteSomethingScreen.dart';
+import 'Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/SelfCompassion/RecogniseEmotionsScreen.dart';
 import 'ThemeManager.dart';
 import 'Util/AuthWrapper.dart';
 import 'Util/ErrorApp.dart';
@@ -142,7 +145,7 @@ class MyApp extends StatelessWidget {
           locale: context.locale,
 
           // Use AuthWrapper as home instead of initialRoute
-          home: AuthWrapper(),
+          home: RecogniseEmotionsScreen(),
 
           // Define routes for manual navigation
           routes: {
