@@ -82,20 +82,37 @@ class _AffirmationDayScreenState extends State<AffirmationDayScreen> {
     super.dispose();
   }
 
-  // Get the appropriate affirmation data class based on language
-  dynamic _getAffirmationDataClass() {
+  // Get category by name based on current language
+  Category? _getCategoryByName(String categoryName) {
     switch (currentLanguage) {
       case 'de':
-        return AffirmationDataDE;
+        return AffirmationDataDE.getCategoryByName(categoryName);
       case 'es':
-        return AffirmationDataES;
+        return AffirmationDataES.getCategoryByName(categoryName);
       case 'fr':
-        return AffirmationDataFR;
+        return AffirmationDataFR.getCategoryByName(categoryName);
       case 'ru':
-        return AffirmationDataRU;
+        return AffirmationDataRU.getCategoryByName(categoryName);
       case 'en':
       default:
-        return AffirmationData;
+        return AffirmationData.getCategoryByName(categoryName);
+    }
+  }
+
+  // Get all categories based on current language
+  List<Category> _getAllCategories() {
+    switch (currentLanguage) {
+      case 'de':
+        return AffirmationDataDE.getAllCategories();
+      case 'es':
+        return AffirmationDataES.getAllCategories();
+      case 'fr':
+        return AffirmationDataFR.getAllCategories();
+      case 'ru':
+        return AffirmationDataRU.getAllCategories();
+      case 'en':
+      default:
+        return AffirmationData.getAllCategories();
     }
   }
 
@@ -113,14 +130,14 @@ class _AffirmationDayScreenState extends State<AffirmationDayScreen> {
 
         await Share.shareXFiles(
           [XFile(imagePath)],
-          text: 'Check out this affirmation!',
+          text: 'Check out this affirmation!'.tr(),
         );
       }
     } catch (e) {
       print('Error sharing affirmation: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to share affirmation'),
+          content: Text('Failed to share affirmation'.tr()),
           backgroundColor: Colors.red,
         ),
       );
@@ -150,6 +167,61 @@ class _AffirmationDayScreenState extends State<AffirmationDayScreen> {
     }
   }
 
+  // Handle neutral button - shuffle to a different affirmation
+  Future<void> _handleNeutralAffirmation() async {
+    final today = DateTime.now();
+    final todayString = DateFormat('yyyy-MM-dd').format(today);
+    final category = _getCategoryByName(selectedCategory);
+
+    if (category != null && category.affirmation.length > 1) {
+      List<String> availableAffirmations = category.affirmation
+          .where((affirmation) => affirmation != currentAffirmation)
+          .toList();
+
+      if (availableAffirmations.isNotEmpty) {
+        final random = Random();
+        final newAffirmation = availableAffirmations[random.nextInt(availableAffirmations.length)];
+
+        setState(() {
+          currentAffirmation = newAffirmation;
+        });
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+            'affirmation_of_day_${selectedCategory}_${todayString}_$currentLanguage',
+            newAffirmation
+        );
+      }
+    }
+  }
+
+  // Handle like button - save to favorites
+  Future<void> _handleLikeAffirmation() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> favorites = prefs.getStringList('favorite_affirmations_$currentLanguage') ?? [];
+
+    if (!favorites.contains(currentAffirmation)) {
+      favorites.add(currentAffirmation);
+      await prefs.setStringList('favorite_affirmations_$currentLanguage', favorites);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Affirmation saved to favorites!'.tr()),
+          backgroundColor: context.primaryTextColor,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Already in favorites!'.tr()),
+          backgroundColor: context.primaryTextColor,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   Future<void> _loadAffirmationOfTheDay() async {
     setState(() {
       isLoading = true;
@@ -171,10 +243,10 @@ class _AffirmationDayScreenState extends State<AffirmationDayScreen> {
 
     if (lastAffirmationDate != todayString) {
       affirmationForToday = _generateDailyAffirmation(selectedCategory, today);
-      await prefs.setString('affirmation_of_day_${savedCategory}_${todayString}_$currentLanguage', affirmationForToday);
+      await prefs.setString('affirmation_of_day_${selectedCategory}_${todayString}_$currentLanguage', affirmationForToday);
       await prefs.setString('last_affirmation_date_${savedCategory}_$currentLanguage', todayString);
     } else {
-      affirmationForToday = prefs.getString('affirmation_of_day_${savedCategory}_${todayString}_$currentLanguage') ??
+      affirmationForToday = prefs.getString('affirmation_of_day_${selectedCategory}_${todayString}_$currentLanguage') ??
           _generateDailyAffirmation(selectedCategory, today);
     }
 
@@ -185,27 +257,7 @@ class _AffirmationDayScreenState extends State<AffirmationDayScreen> {
   }
 
   String _generateDailyAffirmation(String categoryName, DateTime date) {
-    Category? category;
-
-    // Call static method directly on the class
-    switch (currentLanguage) {
-      case 'de':
-        category = AffirmationDataDE.getCategoryByName(categoryName);
-        break;
-      case 'es':
-        category = AffirmationDataES.getCategoryByName(categoryName);
-        break;
-      case 'fr':
-        category = AffirmationDataFR.getCategoryByName(categoryName);
-        break;
-      case 'ru':
-        category = AffirmationDataRU.getCategoryByName(categoryName);
-        break;
-      case 'en':
-      default:
-        category = AffirmationData.getCategoryByName(categoryName);
-        break;
-    }
+    final category = _getCategoryByName(categoryName);
 
     if (category == null || category.affirmation.isEmpty) {
       return _getDefaultAffirmation();
@@ -275,28 +327,7 @@ class _AffirmationDayScreenState extends State<AffirmationDayScreen> {
   }
 
   Widget _buildDropdown() {
-    List<Category> categories;
-
-    // Call static method directly on the class
-    switch (currentLanguage) {
-      case 'de':
-        categories = AffirmationDataDE.getAllCategories();
-        break;
-      case 'es':
-        categories = AffirmationDataES.getAllCategories();
-        break;
-      case 'fr':
-        categories = AffirmationDataFR.getAllCategories();
-        break;
-      case 'ru':
-        categories = AffirmationDataRU.getAllCategories();
-        break;
-      case 'en':
-      default:
-        categories = AffirmationData.getAllCategories();
-        break;
-    }
-
+    final categories = _getAllCategories();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -417,170 +448,195 @@ class _AffirmationDayScreenState extends State<AffirmationDayScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.backgroundColor,
-      body: Screenshot(
-        controller: _screenshotController,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: SvgPicture.asset(
-                context.isDarkMode
-                    ? 'assets/svg/AffirmationDark.svg'
-                    : 'assets/svg/Affirmation of the Day.svg',
-                fit: BoxFit.cover,
+      body: GestureDetector(
+        onTap: () {
+          if (showDropdown) {
+            setState(() {
+              showDropdown = false;
+            });
+          }
+        },
+        child: Screenshot(
+          controller: _screenshotController,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: SvgPicture.asset(
+                  context.isDarkMode
+                      ? 'assets/svg/AffirmationDark.svg'
+                      : 'assets/svg/Affirmation of the Day.svg',
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
 
-            Column(
-              children: [
-                SafeArea(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            margin: const EdgeInsets.all(8),
-                            child: SvgPicture.asset(
-                              context.isDarkMode
-                                  ? 'assets/svg/BackBlack.svg'
-                                  : 'assets/svg/WhiteRoundBGBack.svg',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              'Affirmation of the Day'.tr(),
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: context.primaryTextColor,
+              Column(
+                children: [
+                  SafeArea(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              margin: const EdgeInsets.all(8),
+                              child: SvgPicture.asset(
+                                context.isDarkMode
+                                    ? 'assets/svg/BackBlack.svg'
+                                    : 'assets/svg/WhiteRoundBGBack.svg',
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 56),
-                      ],
-                    ),
-                  ),
-                ),
-
-                _buildDropdown(),
-
-                Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: isLoading
-                          ? CircularProgressIndicator(
-                        color: context.primaryTextColor,
-                      )
-                          : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            currentAffirmation,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: context.primaryTextColor,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w500,
-                              height: 1.4,
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                'Affirmation of the Day'.tr(),
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  color: context.primaryTextColor,
+                                ),
+                              ),
                             ),
                           ),
+                          SizedBox(width: 56),
                         ],
                       ),
                     ),
                   ),
-                ),
 
-                SizedBox(height: 140),
-              ],
-            ),
+                  const SizedBox(height: 20),
 
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 180,
-              child: Center(
-                child: GestureDetector(
-                  onTap: _handleDonePressed,
-                  child: Container(
-                    width: 148,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: context.isDarkMode
-                          ? AppColors.darkPrimaryText
-                          : AppColors.lightBlackSection,
-                      borderRadius: BorderRadius.circular(55),
-                    ),
+                  _buildDropdown(),
+
+                  Expanded(
                     child: Center(
-                      child: Text(
-                        'Done'.tr(),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: context.isDarkMode
-                              ? AppColors.darkBackground
-                              : Colors.white,
-                          fontWeight: FontWeight.w400,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: isLoading
+                            ? CircularProgressIndicator(
+                          color: context.primaryTextColor,
+                        )
+                            : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              currentAffirmation,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: context.primaryTextColor,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 140),
+                ],
+              ),
+
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 180,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: _handleDonePressed,
+                    child: Container(
+                      width: 148,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: context.isDarkMode
+                            ? AppColors.darkPrimaryText
+                            : AppColors.lightBlackSection,
+                        borderRadius: BorderRadius.circular(55),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Done'.tr(),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: context.isDarkMode
+                                ? AppColors.darkBackground
+                                : Colors.white,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.isDarkMode ? context.cardBackgroundColor : context.blackSectionColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: context.isDarkMode ? context.cardBackgroundColor : context.blackSectionColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
                   ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: SafeArea(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: _shareAffirmation,
-                        child: SvgPicture.asset(
-                          context.isDarkMode
-                              ? 'assets/svg/shareTip.svg'
-                              : 'assets/svg/shareTip.svg',
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: SafeArea(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        GestureDetector(
+                          onTap: _shareAffirmation,
+                          child: Container(
+                            width: 173,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(55),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/share.png',
+
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Share'.tr(),
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          // Handle neutral action
-                        },
-                        child: SvgPicture.asset(
-                          context.isDarkMode
-                              ? 'assets/svg/neutral.svg'
-                              : 'assets/svg/neutral.svg',
+                        GestureDetector(
+                          onTap: _handleNeutralAffirmation,
+                          child: SvgPicture.asset(
+                            'assets/svg/neutral.svg',
+                          ),
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          // Handle like action
-                        },
-                        child: SvgPicture.asset(
-                          context.isDarkMode
-                              ? 'assets/svg/like.svg'
-                              : 'assets/svg/like.svg',
+                        GestureDetector(
+                          onTap: _handleLikeAffirmation,
+                          child: SvgPicture.asset(
+                            'assets/svg/like.svg',
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../AppData/Quotes/QuotesData.dart';
 import '../../../AppData/Quotes/QuotesDataES.dart';
@@ -23,13 +24,17 @@ class QuotesScreen extends StatefulWidget {
 
 class _QuotesScreenState extends State<QuotesScreen> {
   String selectedLanguage = 'en';
-  Set<String> selectedCategories = {};  // Changed: Start with empty set
+  Set<String> selectedCategories = {};
   List<String> allQuotes = [];
   int currentQuoteIndex = 0;
   bool showDropdown = false;
-  bool _isInitialized = false;  // Added: Track initialization
+  bool _isInitialized = false;
   late PageController _pageController;
   final ScreenshotController _screenshotController = ScreenshotController();
+
+  // Added: Track liked quotes
+  Set<String> likedQuotes = {};
+  static const String _likedQuotesKey = 'liked_quotes';
 
   // Map English categories to data source keys
   final Map<String, String> categoryToKeyMap = {
@@ -138,7 +143,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
     'Стоицизм': 'stoicism',
   };
 
-  // Added: Get default category based on language
   String _getDefaultCategoryForLanguage(String lang) {
     switch (lang) {
       case 'es':
@@ -158,10 +162,51 @@ class _QuotesScreenState extends State<QuotesScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    // Removed: Don't load quotes here, wait for didChangeDependencies
+    _loadLikedQuotes();
   }
 
-  // Added: Initialize after context is available
+  // Added: Load liked quotes from SharedPreferences
+  Future<void> _loadLikedQuotes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final liked = prefs.getStringList(_likedQuotesKey) ?? [];
+    setState(() {
+      likedQuotes = liked.toSet();
+    });
+  }
+
+  // Added: Save liked quotes to SharedPreferences
+  Future<void> _saveLikedQuotes() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_likedQuotesKey, likedQuotes.toList());
+  }
+
+  // Added: Toggle like status
+  Future<void> _toggleLike(String quote) async {
+    setState(() {
+      if (likedQuotes.contains(quote)) {
+        likedQuotes.remove(quote);
+      } else {
+        likedQuotes.add(quote);
+      }
+    });
+    await _saveLikedQuotes();
+
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            likedQuotes.contains(quote)
+                ? 'Quote added to favorites'
+                : 'Quote removed from favorites'
+        ),
+        duration: const Duration(milliseconds: 800),
+        backgroundColor: likedQuotes.contains(quote)
+            ? Colors.green
+            : Colors.grey,
+      ),
+    );
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -169,26 +214,21 @@ class _QuotesScreenState extends State<QuotesScreen> {
     if (!_isInitialized) {
       _isInitialized = true;
 
-      // Get current locale from context
       final currentLocale = context.locale;
       selectedLanguage = currentLocale.languageCode;
 
-      // Set default category based on current language
       String defaultCategory = _getDefaultCategoryForLanguage(selectedLanguage);
       selectedCategories = {defaultCategory};
 
-      // Load quotes with the correct language
       _loadQuotesFromSelectedCategories();
     }
   }
 
-  // Detect language from selected categories
   void _updateLanguageFromCategories() {
     if (selectedCategories.isEmpty) return;
 
     String firstCategory = selectedCategories.first;
 
-    // Spanish categories
     if (['Sé Tú Mismo', 'Gratitud', 'Pensamiento Positivo', 'Amor Propio',
       'Negocios y Dinero', 'Liderazgo', 'Éxito', 'Hábitos',
       'Superar el Miedo', 'Resiliencia', 'Incertidumbre', 'Soledad',
@@ -196,7 +236,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
       'Ruptura', 'Budismo', 'Estoicismo'].contains(firstCategory)) {
       selectedLanguage = 'es';
     }
-    // French categories
     else if (['Être Soi-Même', 'Pensée Positive', 'Amour de Soi',
       'Affaires et Argent', 'Succès', 'Forme Physique', 'Habitudes',
       'Surmonter la Peur', 'Résilience', 'Incertitude', 'Solitude',
@@ -204,7 +243,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
       'Rupture', 'Bouddhisme', 'Stoïcisme'].contains(firstCategory)) {
       selectedLanguage = 'fr';
     }
-    // German categories
     else if (['Sei Du Selbst', 'Dankbarkeit', 'Positives Denken', 'Selbstliebe',
       'Geschäft und Geld', 'Führung', 'Erfolg', 'Gewohnheiten',
       'Überwindung der Angst', 'Ungewissheit', 'Einsamkeit',
@@ -213,7 +251,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
       'Stoizismus'].contains(firstCategory)) {
       selectedLanguage = 'de';
     }
-    // Russian categories
     else if (['Будь Собой', 'Благодарность', 'Позитивное Мышление', 'Любовь к Себе',
       'Бизнес и Деньги', 'Лидерство', 'Успех', 'Привычки',
       'Преодоление Страха', 'Устойчивость', 'Неопределенность', 'Одиночество',
@@ -222,14 +259,12 @@ class _QuotesScreenState extends State<QuotesScreen> {
       'Стоицизм'].contains(firstCategory)) {
       selectedLanguage = 'ru';
     }
-    // Default to English
     else {
       selectedLanguage = 'en';
     }
   }
 
   void _loadQuotesFromSelectedCategories() {
-    // Update language based on selected categories
     _updateLanguageFromCategories();
 
     List<String> quotes = [];
@@ -252,12 +287,10 @@ class _QuotesScreenState extends State<QuotesScreen> {
     final key = categoryToKeyMap[category];
     if (key == null) return [];
 
-    // Get the appropriate data source based on language
     dynamic quotes;
 
     switch (selectedLanguage) {
       case 'es':
-      // For Spanish, use QuotesDataES class
         switch (key) {
           case 'be_yourself':
             quotes = QuotesDataES.beYourselfQuotes;
@@ -322,7 +355,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
         break;
 
       case 'fr':
-      // For French, use QuotesDataFR class
         switch (key) {
           case 'be_yourself':
             quotes = QuotesDataFR.beYourselfQuotes;
@@ -384,7 +416,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
         break;
 
       default:
-      // For English, use QuotesData class
         switch (key) {
           case 'be_yourself':
             quotes = QuotesData.beYourselfQuotes;
@@ -468,7 +499,16 @@ class _QuotesScreenState extends State<QuotesScreen> {
 
         await Share.shareXFiles(
           [XFile(imagePath)],
-          text: 'Check out this inspiring quote!',
+          text: allQuotes[currentQuoteIndex],
+        );
+
+        // Show feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Quote shared successfully!'),
+            duration: Duration(milliseconds: 800),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
@@ -557,7 +597,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
                   color: Colors.transparent,
                   child: Row(
                     children: [
-
                       Expanded(
                         child: Center(
                           child: Text(
@@ -587,7 +626,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
                 onTap: () async {
                   final result = await showQuoteCategoryScreen(context);
                   if (result != null) {
-                    // Handle the result from category screen
                     if (result is Map<String, dynamic>) {
                       setState(() {
                         if (result['categories'] != null) {
@@ -623,6 +661,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Skip/Dislike button
                   GestureDetector(
                     onTap: () {
                       if (currentQuoteIndex < allQuotes.length - 1) {
@@ -640,9 +679,12 @@ class _QuotesScreenState extends State<QuotesScreen> {
                     ),
                   ),
                   const SizedBox(width: 40),
+                  // Like/Favorite button
                   GestureDetector(
-                    onTap: () {
-                      // TODO: Add to favorites
+                    onTap: () async {
+                      await _toggleLike(allQuotes[currentQuoteIndex]);
+
+                      // Move to next quote after liking
                       if (currentQuoteIndex < allQuotes.length - 1) {
                         _pageController.animateToPage(
                           currentQuoteIndex + 1,
@@ -651,10 +693,17 @@ class _QuotesScreenState extends State<QuotesScreen> {
                         );
                       }
                     },
-                    child: SvgPicture.asset(
-                      isDarkMode
-                          ? 'assets/svg/heart_dark.svg'
-                          : 'assets/svg/liked.svg',
+                    child: AnimatedScale(
+                      scale: likedQuotes.contains(allQuotes[currentQuoteIndex]) ? 1.2 : 1.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: SvgPicture.asset(
+                        isDarkMode
+                            ? 'assets/svg/heart_dark.svg'
+                            : 'assets/svg/liked.svg',
+                        colorFilter: likedQuotes.contains(allQuotes[currentQuoteIndex])
+                            ? const ColorFilter.mode(Colors.red, BlendMode.srcIn)
+                            : null,
+                      ),
                     ),
                   ),
                 ],

@@ -11,7 +11,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import '../../../../../AppData/TipsData.dart';
+import '../../../../../AppData/Tips/TipDataRU.dart';
+import '../../../../../AppData/Tips/TipsData.dart';
+import '../../../../../AppData/Tips/TipsDataDE.dart';
+import '../../../../../AppData/Tips/TipsDataES.dart';
+import '../../../../../AppData/Tips/TipsDataFR.dart';
 import '../../../../../Manager/TipsManager.dart';
 
 class TipDayScreen extends StatefulWidget {
@@ -26,6 +30,7 @@ class _TipDayScreenState extends State<TipDayScreen> {
   String currentTip = "";
   bool isLoading = true;
   bool showDropdown = false;
+  String currentLanguageCode = 'en';
 
   final TipsManager _tipsManager = TipsManager();
   final ScreenshotController _screenshotController = ScreenshotController();
@@ -34,7 +39,17 @@ class _TipDayScreenState extends State<TipDayScreen> {
   void initState() {
     super.initState();
     _initializeTipsManager();
-    _loadTipOfTheDay();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Get current language when dependencies are available
+    final locale = context.locale;
+    if (currentLanguageCode != locale.languageCode) {
+      currentLanguageCode = locale.languageCode;
+      _loadTipOfTheDay();
+    }
   }
 
   @override
@@ -44,6 +59,39 @@ class _TipDayScreenState extends State<TipDayScreen> {
 
   Future<void> _initializeTipsManager() async {
     await _tipsManager.initialize();
+    await _loadTipOfTheDay();
+  }
+
+  // Get category by name based on current language
+  dynamic _getCategoryByName(String categoryName) {
+    switch (currentLanguageCode) {
+      case 'ru':
+        return TipDataRU.getCategoryByName(categoryName);
+      case 'de':
+        return TipDataDE.getCategoryByName(categoryName);
+      case 'es':
+        return TipDataES.getCategoryByName(categoryName);
+      case 'fr':
+        return TipDataFR.getCategoryByName(categoryName);
+      default:
+        return TipData.getCategoryByName(categoryName);
+    }
+  }
+
+  // Get all categories based on current language
+  List<dynamic> _getAllCategories() {
+    switch (currentLanguageCode) {
+      case 'ru':
+        return TipDataRU.getAllCategories();
+      case 'de':
+        return TipDataDE.getAllCategories();
+      case 'es':
+        return TipDataES.getAllCategories();
+      case 'fr':
+        return TipDataFR.getAllCategories();
+      default:
+        return TipData.getAllCategories();
+    }
   }
 
   Future<void> _loadTipOfTheDay() async {
@@ -56,7 +104,7 @@ class _TipDayScreenState extends State<TipDayScreen> {
     final todayString = DateFormat('yyyy-MM-dd').format(today);
 
     final savedCategory = prefs.getString('selected_tip_category') ?? selectedCategory;
-    final lastTipDate = prefs.getString('last_tip_date_$savedCategory') ?? '';
+    final lastTipDate = prefs.getString('last_tip_date_${savedCategory}_$currentLanguageCode') ?? '';
 
     setState(() {
       selectedCategory = savedCategory;
@@ -66,10 +114,10 @@ class _TipDayScreenState extends State<TipDayScreen> {
 
     if (lastTipDate != todayString) {
       tipForToday = _generateDailyTip(selectedCategory, today);
-      await prefs.setString('tip_of_day_$selectedCategory$todayString', tipForToday);
-      await prefs.setString('last_tip_date_$selectedCategory', todayString);
+      await prefs.setString('tip_of_day_${selectedCategory}_${todayString}_$currentLanguageCode', tipForToday);
+      await prefs.setString('last_tip_date_${savedCategory}_$currentLanguageCode', todayString);
     } else {
-      tipForToday = prefs.getString('tip_of_day_$selectedCategory$todayString') ??
+      tipForToday = prefs.getString('tip_of_day_${selectedCategory}_${todayString}_$currentLanguageCode') ??
           _generateDailyTip(selectedCategory, today);
     }
 
@@ -80,7 +128,8 @@ class _TipDayScreenState extends State<TipDayScreen> {
   }
 
   String _generateDailyTip(String categoryName, DateTime date) {
-    final category = TipData.getCategoryByName(categoryName);
+    final category = _getCategoryByName(categoryName);
+
     if (category == null || category.tips.isEmpty) {
       return "Stay positive and keep growing!";
     }
@@ -121,14 +170,14 @@ class _TipDayScreenState extends State<TipDayScreen> {
 
         await Share.shareXFiles(
           [XFile(imagePath)],
-          text: 'Check out this helpful tip!',
+          text: 'Check out this helpful tip!'.tr(),
         );
       }
     } catch (e) {
       print('Error sharing tip: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to share tip'),
+          content: Text('Failed to share tip'.tr()),
           backgroundColor: Colors.red,
         ),
       );
@@ -206,9 +255,9 @@ class _TipDayScreenState extends State<TipDayScreen> {
               constraints: const BoxConstraints(maxHeight: 300),
               child: ListView.builder(
                 shrinkWrap: true,
-                itemCount: TipData.getAllCategories().length,
+                itemCount: _getAllCategories().length,
                 itemBuilder: (context, index) {
-                  final category = TipData.getAllCategories()[index];
+                  final category = _getAllCategories()[index];
                   final isSelected = category.name == selectedCategory;
 
                   return GestureDetector(
@@ -272,6 +321,45 @@ class _TipDayScreenState extends State<TipDayScreen> {
 
     if (mounted) {
       Navigator.pop(context, true);
+    }
+  }
+
+  Future<void> _handleNeutralTip() async {
+    final today = DateTime.now();
+    final todayString = DateFormat('yyyy-MM-dd').format(today);
+    final category = _getCategoryByName(selectedCategory);
+
+    if (category != null && category.tips.length > 1) {
+      List<String> availableTips = category.tips.where((tip) => tip != currentTip).toList();
+      if (availableTips.isNotEmpty) {
+        final random = Random();
+        final newTip = availableTips[random.nextInt(availableTips.length)];
+
+        setState(() {
+          currentTip = newTip;
+        });
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('tip_of_day_${selectedCategory}_${todayString}_$currentLanguageCode', newTip);
+      }
+    }
+  }
+
+  Future<void> _handleLikeTip() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> favorites = prefs.getStringList('favorite_tips_$currentLanguageCode') ?? [];
+
+    if (!favorites.contains(currentTip)) {
+      favorites.add(currentTip);
+      await prefs.setStringList('favorite_tips_$currentLanguageCode', favorites);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Tip saved to favorites!'.tr()),
+          backgroundColor: context.primaryTextColor,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -445,53 +533,42 @@ class _TipDayScreenState extends State<TipDayScreen> {
                       children: [
                         GestureDetector(
                           onTap: _shareTip,
-                          child: SvgPicture.asset(
-                            'assets/svg/shareTip.svg',
+                          child: Container(
+                            width: 173,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(55),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/share.png',
+
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Share'.tr(),
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         GestureDetector(
-                          onTap: () async {
-                            final today = DateTime.now();
-                            final todayString = DateFormat('yyyy-MM-dd').format(today);
-                            final category = TipData.getCategoryByName(selectedCategory);
-
-                            if (category != null && category.tips.length > 1) {
-                              List<String> availableTips = category.tips.where((tip) => tip != currentTip).toList();
-                              if (availableTips.isNotEmpty) {
-                                final random = Random();
-                                final newTip = availableTips[random.nextInt(availableTips.length)];
-
-                                setState(() {
-                                  currentTip = newTip;
-                                });
-
-                                final prefs = await SharedPreferences.getInstance();
-                                await prefs.setString('tip_of_day_$selectedCategory$todayString', newTip);
-                              }
-                            }
-                          },
+                          onTap: _handleNeutralTip,
                           child: SvgPicture.asset(
                             'assets/svg/neutral.svg',
                           ),
                         ),
                         GestureDetector(
-                          onTap: () async {
-                            final prefs = await SharedPreferences.getInstance();
-                            List<String> favorites = prefs.getStringList('favorite_tips') ?? [];
-
-                            if (!favorites.contains(currentTip)) {
-                              favorites.add(currentTip);
-                              await prefs.setStringList('favorite_tips', favorites);
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Tip saved to favorites!'),
-                                  backgroundColor: context.primaryTextColor,
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            }
-                          },
+                          onTap: _handleLikeTip,
                           child: SvgPicture.asset(
                             'assets/svg/like.svg',
                           ),

@@ -304,7 +304,7 @@ class _EntriesInsightScreenState extends State<EntriesInsightScreen> {
           ),
         ),
         title: Text(
-          'Life Goals - Insights',
+          'Life Goals - Insights'.tr(),
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 16,

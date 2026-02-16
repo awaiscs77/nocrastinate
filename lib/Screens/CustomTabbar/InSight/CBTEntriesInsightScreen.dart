@@ -9,13 +9,12 @@ import '../../../ApiServices/MindPracticeService.dart';
 import '../../../ThemeManager.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-
 class CBTEntriesInsightScreen extends StatefulWidget {
-  final bool isWhatIfChallenge; // true = What If Challenge, false = Cost Benefit
+  final String practiceType; // Practice type to display
 
   const CBTEntriesInsightScreen({
     Key? key,
-    required this.isWhatIfChallenge,
+    required this.practiceType,
   }) : super(key: key);
 
   @override
@@ -37,6 +36,44 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
     }
   }
 
+  String _getPracticeTitle() {
+    switch (widget.practiceType) {
+      case MindPracticeService.whatIfChallengeType:
+        return 'What If Challenge - Insights'.tr();
+      case MindPracticeService.costBenefitType:
+        return 'Cost Benefit - Insights'.tr();
+      case MindPracticeService.gratitudeJournalType:
+        return 'Gratitude Journal - Insights'.tr();
+      case MindPracticeService.growthMindsetType:
+        return 'Growth Mindset - Insights'.tr();
+      case MindPracticeService.selfCompassionType:
+        return 'Self Compassion - Insights'.tr();
+      case MindPracticeService.selfEfficacyType:
+        return 'Self Efficacy - Insights'.tr();
+      default:
+        return 'Practice Insights'.tr();
+    }
+  }
+
+  String _getPracticeDisplayName() {
+    switch (widget.practiceType) {
+      case MindPracticeService.whatIfChallengeType:
+        return '"What If" Challenge';
+      case MindPracticeService.costBenefitType:
+        return '"Cost-Benefit" Analysis';
+      case MindPracticeService.gratitudeJournalType:
+        return 'Gratitude Journal';
+      case MindPracticeService.growthMindsetType:
+        return 'Growth Mindset';
+      case MindPracticeService.selfCompassionType:
+        return 'Self Compassion';
+      case MindPracticeService.selfEfficacyType:
+        return 'Self Efficacy';
+      default:
+        return 'Practice';
+    }
+  }
+
   Future<List<Map<String, dynamic>>> _getEntries() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -46,39 +83,18 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
       }
 
       print('DEBUG: User ID: ${user.uid}');
+      print('DEBUG: Looking for practice type: ${widget.practiceType}');
 
-      final practiceType = widget.isWhatIfChallenge
-          ? MindPracticeService.whatIfChallengeType
-          : MindPracticeService.costBenefitType;
-
-      print('DEBUG: Looking for practice type: $practiceType');
-      print('DEBUG: isWhatIfChallenge: ${widget.isWhatIfChallenge}');
-
-      // First, check all documents without filters
-      final allDocs = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('mind_practices')
-          .get();
-
-      print('DEBUG: Total documents in collection: ${allDocs.docs.length}');
-
-      for (var doc in allDocs.docs) {
-        final data = doc.data();
-        print('DEBUG: Doc ${doc.id} - practiceType: ${data['practiceType']}, completed: ${data['completed']}');
-      }
-
-      // Now try with filters
       final snapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('mind_practices')
-          .where('practiceType', isEqualTo: practiceType)
+          .where('practiceType', isEqualTo: widget.practiceType)
           .where('completed', isEqualTo: true)
           .orderBy('timestamp', descending: true)
           .get();
 
-      print('DEBUG: Filtered documents: ${snapshot.docs.length}');
+      print('DEBUG: Found ${snapshot.docs.length} documents');
 
       return snapshot.docs.map((doc) {
         final data = doc.data();
@@ -95,7 +111,7 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // This is the default setting
+      resizeToAvoidBottomInset: true,
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
         backgroundColor: context.backgroundColor,
@@ -112,7 +128,7 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
           ),
         ),
         title: Text(
-          widget.isWhatIfChallenge ? 'What If Challenge - Insights' : 'Cost Benefit - Insights',
+          _getPracticeTitle().tr(),
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 16,
@@ -131,9 +147,7 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
               child: Align(
                 alignment: Alignment.center,
                 child: Text(
-                  widget.isWhatIfChallenge
-                      ? '"What If" Challenge'
-                      : '"Cost-Benefit" Analysis',
+                  _getPracticeDisplayName().tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Poppins',
@@ -147,7 +161,7 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
             ),
             const SizedBox(height: 20),
 
-            // StreamBuilder for entries
+            // FutureBuilder for entries
             Expanded(
               child: FutureBuilder<List<Map<String, dynamic>>>(
                 future: _getEntries(),
@@ -166,7 +180,7 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Error loading entries',
+                            'Error loading entries'.tr(),
                             style: TextStyle(
                               fontFamily: 'Poppins',
                               color: context.primaryTextColor,
@@ -205,9 +219,7 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     itemCount: entries.length,
                     itemBuilder: (context, index) {
-                      return widget.isWhatIfChallenge
-                          ? _buildWhatIfEntry(entries[index])
-                          : _buildCostBenefitEntry(entries[index]);
+                      return _buildEntryForType(entries[index]);
                     },
                   );
                 },
@@ -218,6 +230,26 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
       ),
     );
   }
+
+  Widget _buildEntryForType(Map<String, dynamic> entry) {
+    switch (widget.practiceType) {
+      case MindPracticeService.whatIfChallengeType:
+        return _buildWhatIfEntry(entry);
+      case MindPracticeService.costBenefitType:
+        return _buildCostBenefitEntry(entry);
+      case MindPracticeService.gratitudeJournalType:
+        return _buildGratitudeJournalEntry(entry);
+      case MindPracticeService.growthMindsetType:
+        return _buildGrowthMindsetEntry(entry);
+      case MindPracticeService.selfCompassionType:
+        return _buildSelfCompassionEntry(entry);
+      case MindPracticeService.selfEfficacyType:
+        return _buildSelfEfficacyEntry(entry);
+      default:
+        return Container();
+    }
+  }
+
   Widget _buildCostBenefitEntry(Map<String, dynamic> entry) {
     final data = entry['data'] as Map<String, dynamic>?;
     final timestamp = entry['timestamp'] as Timestamp?;
@@ -320,7 +352,7 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
                         color: const Color(0xFF023E8A),
                         borderRadius: BorderRadius.circular(25),
                       ),
-                      child:  Center(
+                      child: Center(
                         child: Text(
                           'Pros'.tr(),
                           style: TextStyle(
@@ -361,7 +393,7 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
                         color: const Color(0xFF023E8A),
                         borderRadius: BorderRadius.circular(25),
                       ),
-                      child:  Center(
+                      child: Center(
                         child: Text(
                           'Cons'.tr(),
                           style: TextStyle(
@@ -598,6 +630,568 @@ class _CBTEntriesInsightScreenState extends State<CBTEntriesInsightScreen> {
                   borderRadius: BorderRadius.circular(8),
                   child: Text(
                     data?['bestOutcome'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGratitudeJournalEntry(Map<String, dynamic> entry) {
+    final data = entry['data'] as Map<String, dynamic>?;
+    final timestamp = entry['timestamp'] as Timestamp?;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left column with date and SVG
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (timestamp != null)
+                Text(
+                  _formatDate(timestamp).tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.accent
+                        : Color(0xFF023E8A),
+                  ),
+                ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 150,
+                width: 24,
+                child: SvgPicture.asset(
+                  'assets/svg/taskProgress.svg',
+                  fit: BoxFit.fill,
+                  colorFilter: Theme.of(context).brightness == Brightness.dark
+                      ? ColorFilter.mode(AppColors.accent, BlendMode.srcIn)
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          // Right column with content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Practice Type container
+                ThemedContainer(
+                  width: 160,
+                  height: 32,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  borderRadius: BorderRadius.circular(35),
+                  child: Center(
+                    child: Text(
+                      'Gratitude Journal'.tr(),
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.primaryTextColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Grateful For
+                Text(
+                  'Grateful For:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['gratefulThing'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Why Grateful
+                Text(
+                  'Why It Makes Me Grateful:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['whyGrateful'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGrowthMindsetEntry(Map<String, dynamic> entry) {
+    final data = entry['data'] as Map<String, dynamic>?;
+    final timestamp = entry['timestamp'] as Timestamp?;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left column with date and SVG
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (timestamp != null)
+                Text(
+                  _formatDate(timestamp).tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.accent
+                        : Color(0xFF023E8A),
+                  ),
+                ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 220,
+                width: 24,
+                child: SvgPicture.asset(
+                  'assets/svg/taskProgress.svg',
+                  fit: BoxFit.fill,
+                  colorFilter: Theme.of(context).brightness == Brightness.dark
+                      ? ColorFilter.mode(AppColors.accent, BlendMode.srcIn)
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          // Right column with content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Practice Type container
+                ThemedContainer(
+                  width: 160,
+                  height: 32,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  borderRadius: BorderRadius.circular(35),
+                  child: Center(
+                    child: Text(
+                      'Growth Mindset'.tr(),
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.primaryTextColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Difficulty
+                Text(
+                  'Current Difficulty:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['difficulty'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Opportunity
+                Text(
+                  'Turn Into Opportunity:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['opportunity'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Past Learning
+                Text(
+                  'Past Learning:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['pastLearning'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelfCompassionEntry(Map<String, dynamic> entry) {
+    final data = entry['data'] as Map<String, dynamic>?;
+    final timestamp = entry['timestamp'] as Timestamp?;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left column with date and SVG
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (timestamp != null)
+                Text(
+                  _formatDate(timestamp).tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.accent
+                        : Color(0xFF023E8A),
+                  ),
+                ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 220,
+                width: 24,
+                child: SvgPicture.asset(
+                  'assets/svg/taskProgress.svg',
+                  fit: BoxFit.fill,
+                  colorFilter: Theme.of(context).brightness == Brightness.dark
+                      ? ColorFilter.mode(AppColors.accent, BlendMode.srcIn)
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          // Right column with content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Practice Type container
+                ThemedContainer(
+                  width: 160,
+                  height: 32,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  borderRadius: BorderRadius.circular(35),
+                  child: Center(
+                    child: Text(
+                      'Self Compassion'.tr(),
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.primaryTextColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Self Criticism
+                Text(
+                  'Self-Criticism:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['selfCriticism'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Emotion
+                Row(
+                  children: [
+                    Text(
+                      'Emotion:'.tr(),
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: context.primaryTextColor,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.accent
+                            : Color(0xFF023E8A),
+                        borderRadius: BorderRadius.circular(55),
+                      ),
+                      child: Text(
+                        (data?['emotion'] ?? '').toString().tr(),
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Kindness
+                Text(
+                  'Showing Kindness:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['kindness'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelfEfficacyEntry(Map<String, dynamic> entry) {
+    final data = entry['data'] as Map<String, dynamic>?;
+    final timestamp = entry['timestamp'] as Timestamp?;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left column with date and SVG
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (timestamp != null)
+                Text(
+                  _formatDate(timestamp).tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.accent
+                        : Color(0xFF023E8A),
+                  ),
+                ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 150,
+                width: 24,
+                child: SvgPicture.asset(
+                  'assets/svg/taskProgress.svg',
+                  fit: BoxFit.fill,
+                  colorFilter: Theme.of(context).brightness == Brightness.dark
+                      ? ColorFilter.mode(AppColors.accent, BlendMode.srcIn)
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          // Right column with content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Practice Type container
+                ThemedContainer(
+                  width: 160,
+                  height: 32,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  borderRadius: BorderRadius.circular(35),
+                  child: Center(
+                    child: Text(
+                      'Self Efficacy'.tr(),
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.primaryTextColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Doubt
+                Text(
+                  'Doubt About Ability:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['doubt'] ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: context.primaryTextColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Past Success
+                Text(
+                  'Past Success:'.tr(),
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ThemedContainer(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    data?['pastSuccess'] ?? '',
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 12,

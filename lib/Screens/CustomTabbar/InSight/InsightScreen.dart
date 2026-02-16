@@ -11,6 +11,7 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../ApiServices/CreateGoalServices.dart';
 import '../../../ApiServices/FocusService.dart';
+import '../../../ApiServices/MindPracticeService.dart';
 import '../../../Manager/MoodCheckinManager.dart';
 import '../../../Models/FocusChartModels.dart';
 import '../../../Models/FocusItem.dart';
@@ -897,10 +898,59 @@ class _InsightScreenState extends State<InsightScreen> {
                       const SizedBox(height: 12),
                       GestureDetector(
                         onTap: () {
-
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>CBTEntriesInsightScreen(practiceType: MindPracticeService.gratitudeJournalType)
+                            ),
+                          );
                         },
-                        child: SvgPicture.asset(
-                          'assets/svg/cbt.svg',
+                        child:Stack(
+                          children: [
+                            Image.asset(
+                              'assets/gratitude.png',
+                              fit: BoxFit.contain,
+                            ),
+                            Positioned(
+                              top: 16,
+                              right: 16,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          color: Colors.white,
+                                          fontFamily: 'Raleway-Italic',
+                                        ),
+                                        children: [
+                                          TextSpan(text: "Gratitude ".tr()),
+                                          TextSpan(
+                                            text: "Journal".tr(),
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'Poppins',
+                                                fontSize: 20
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.visible,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       SizedBox(height: 24),
@@ -915,14 +965,65 @@ class _InsightScreenState extends State<InsightScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => CBTEntriesInsightScreen(
-                                        isWhatIfChallenge: false,
-                                      ),
+                                        builder: (context) =>CBTEntriesInsightScreen(practiceType: MindPracticeService.costBenefitType)
                                     ),
                                   );
                                 },
-                                child: SvgPicture.asset(
-                                  'assets/svg/cbt1.svg',
+                                child: Stack(
+                                  children: [
+                                    Image.asset(
+                                      'assets/costBenefit.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                    Positioned(
+                                      top: 5,
+                                      left: 5,
+                                      right: 5,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Flexible(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  'Cost-benefit'.tr(),
+                                                  style: TextStyle(
+                                                    fontFamily: 'Raleway-Italic',
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Color(0xFF1F1F1F),
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.visible,
+                                                  softWrap: true,
+                                                ),
+                                                Text(
+                                                  'Analysis'.tr(),
+                                                  style: TextStyle(
+                                                    fontFamily: 'Poppins',
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Color(0xFF1F1F1F),
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.visible,
+                                                  softWrap: true,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.arrow_forward_ios,
+                                            color: Color(0xFF1F1F1F),
+                                            size: 24,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -930,10 +1031,54 @@ class _InsightScreenState extends State<InsightScreen> {
                             Expanded(
                               child: GestureDetector(
                                 onTap: () {
-
-
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>CBTEntriesInsightScreen(practiceType: MindPracticeService.selfCompassionType)
+                                    ),
+                                  );
                                 },
-                                child: Image.asset('assets/self_compression.png'),
+                                child:Stack(
+                                  children: [
+                                    Image.asset(
+                                      'assets/selfCompassion.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                    Positioned(
+                                      bottom: 5,
+                                      right: 5,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: RichText(
+                                              text: TextSpan(
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  color: Color(0xFF1F1F1F),
+                                                  fontFamily: 'Raleway-Italic',
+                                                ),
+                                                children: [
+                                                  TextSpan(text: "Self\n".tr()),
+                                                  TextSpan(
+                                                    text: "Compassion".tr(),
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontFamily: 'Poppins',
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              maxLines: 3,
+                                              overflow: TextOverflow.visible,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -944,19 +1089,65 @@ class _InsightScreenState extends State<InsightScreen> {
 
 
                       GestureDetector(
-                          onTap: () {
-                            //entries what if challenge
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CBTEntriesInsightScreen(
-                                  isWhatIfChallenge: true,
-                                ),
+                        onTap: () {
+                          //entries what if challenge
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>CBTEntriesInsightScreen(practiceType: MindPracticeService.whatIfChallengeType)
+                            ),
+                          );
+                        },
+                        child: Stack(
+                          children: [
+                            Image.asset(
+                              'assets/ifChallenge.png',
+                              fit: BoxFit.contain,
+                            ),
+                            Positioned(
+                              left: 16,
+                              top: 0,
+                              bottom: 0,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          color: Colors.white,
+                                          fontFamily: 'Raleway-Italic',
+                                        ),
+                                        children: [
+                                          TextSpan(text: '"What if" '.tr()),
+                                          TextSpan(
+                                            text: "Challenge".tr(),
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'Poppins',
+                                                fontSize: 20
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.visible,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                          child: Image.asset('assets/whatifChallenge.png')
+                            ),
+                          ],
+                        ),
                       ),
+
                       SizedBox(height: 24),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 0),
@@ -964,19 +1155,115 @@ class _InsightScreenState extends State<InsightScreen> {
                           children: [
                             Expanded(
                               child: GestureDetector(
-                                  onTap: () {
-
-                                  },
-                                  child: Image.asset('assets/growthMindset.png')
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>CBTEntriesInsightScreen(practiceType: MindPracticeService.growthMindsetType)
+                                    ),
+                                  );
+                                },
+                                child: Stack(
+                                  children: [
+                                    Image.asset(
+                                      'assets/growthMindset.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                    Positioned(
+                                      top: 16,
+                                      left: 16,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: RichText(
+                                              text: TextSpan(
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  color: Color(0xFF1F1F1F),
+                                                  fontFamily: 'Raleway-Italic',
+                                                ),
+                                                children: [
+                                                  TextSpan(text: "Growth\n".tr()),
+                                                  TextSpan(
+                                                    text: "Mindset".tr(),
+                                                    style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: 20
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              maxLines: 3,
+                                              overflow: TextOverflow.visible,
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          Icon(
+                                            Icons.arrow_forward_ios,
+                                            color: Color(0xFF1F1F1F),
+                                            size: 24,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             SizedBox(width: 32),
                             Expanded(
                               child: GestureDetector(
-                                  onTap: () {
-
-                                  },
-                                  child: Image.asset('assets/selfEfficacy.png')
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>CBTEntriesInsightScreen(practiceType: MindPracticeService.selfEfficacyType)
+                                    ),
+                                  );
+                                },
+                                child: Stack(
+                                  children: [
+                                    Image.asset(
+                                      'assets/selfEfficacy.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                    Positioned(
+                                      bottom: 16,
+                                      right: 16,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: RichText(
+                                              text: TextSpan(
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  color: Color(0xFF1F1F1F),
+                                                  fontFamily: 'Raleway-Italic',
+                                                ),
+                                                children: [
+                                                  TextSpan(text: "Self\n".tr()),
+                                                  TextSpan(
+                                                    text: "Efficacy".tr(),
+                                                    style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: 20
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              maxLines: 3,
+                                              overflow: TextOverflow.visible,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],

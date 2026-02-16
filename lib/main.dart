@@ -145,7 +145,7 @@ class MyApp extends StatelessWidget {
           locale: context.locale,
 
           // Use AuthWrapper as home instead of initialRoute
-          home: RecogniseEmotionsScreen(),
+          home: AuthWrapper(),
 
           // Define routes for manual navigation
           routes: {

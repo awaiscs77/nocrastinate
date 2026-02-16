@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/SelfCompassion/ShowKindnessScreen.dart';
 import 'package:nocrastinate/ThemeManager.dart';
 import 'package:provider/provider.dart';
-import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/CheckInBahavior/DescribeFeelingScreen.dart';
-
 import 'package:easy_localization/easy_localization.dart';
+import '../../../../../../Manager/MindPracticeManager.dart';
 
 class RecogniseEmotionsScreen extends StatefulWidget {
-  const RecogniseEmotionsScreen({Key? key}) : super(key: key);
+  final String selfCriticism;
+
+  const RecogniseEmotionsScreen({
+    Key? key,
+    required this.selfCriticism,
+  }) : super(key: key);
 
   @override
   _RecogniseEmotionsScreenState createState() => _RecogniseEmotionsScreenState();
@@ -21,17 +26,29 @@ class _RecogniseEmotionsScreenState extends State<RecogniseEmotionsScreen> {
   @override
   void initState() {
     super.initState();
-    // Delay the check to ensure Provider is available
-
   }
 
+  void _showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 14,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
 
-
-
-
-
-
-  void _onMoodSelected(int index) async {
+  Future<void> _onMoodSelected(int index) async {
     if (_isLoading) return;
 
     setState(() {
@@ -43,21 +60,40 @@ class _RecogniseEmotionsScreenState extends State<RecogniseEmotionsScreen> {
     final moodLabels = ['Terrible', 'Sad', 'Neutral', 'Happy', 'Amazing'];
     final moodLabel = moodLabels[index];
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => DescribeFeelingScreen(
-          selectedMoodFromPrevious: index,
-        ),
-      ),
+    final practiceManager = Provider.of<MindPracticeManager>(context, listen: false);
+
+    // Update practice data with emotion
+    final success = await practiceManager.updatePracticeData(
+      data: {
+        'emotion': moodLabel,
+      },
     );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      // Navigate to next screen
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ShowKindnessScreen(
+            selfCriticism: widget.selfCriticism,
+            emotion: moodLabel,
+          ),
+        ),
+      );
+    } else {
+      _showErrorMessage(practiceManager.error ?? 'Failed to update practice data');
+    }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-          resizeToAvoidBottomInset: true, // This is the default setting
+    return Consumer<MindPracticeManager>(
+      builder: (context, practiceManager, child) {
+        return Scaffold(
+          resizeToAvoidBottomInset: true,
           backgroundColor: context.backgroundColor,
           appBar: AppBar(
             backgroundColor: context.backgroundColor,
@@ -74,7 +110,7 @@ class _RecogniseEmotionsScreenState extends State<RecogniseEmotionsScreen> {
             ),
             centerTitle: true,
             title: Text(
-              'Mind Daily Practice'.tr(),
+              'Daily mind practice'.tr(),
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16,
@@ -88,7 +124,24 @@ class _RecogniseEmotionsScreenState extends State<RecogniseEmotionsScreen> {
               children: [
                 Column(
                   children: [
+                    const SizedBox(height: 20),
 
+                    // Progress indicator
+                    if (practiceManager.hasActiveSession)
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
+                        child: LinearProgressIndicator(
+                          value: practiceManager.completionPercentage,
+                          backgroundColor: context.isDarkMode
+                              ? Colors.grey[700]
+                              : Colors.grey[300],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            context.isDarkMode ? Colors.white : context.primaryTextColor,
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 20),
 
                     // Center content container
                     Expanded(
@@ -110,6 +163,7 @@ class _RecogniseEmotionsScreenState extends State<RecogniseEmotionsScreen> {
                                   height: 1.3,
                                 ),
                               ),
+
                               const SizedBox(height: 40),
 
                               // Mood buttons row
@@ -154,10 +208,78 @@ class _RecogniseEmotionsScreenState extends State<RecogniseEmotionsScreen> {
                   ],
                 ),
 
+                // Loading overlay
+                if (_isLoading || practiceManager.isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.3),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: context.backgroundColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                context.isDarkMode ? Colors.white : context.primaryTextColor,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Processing...',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: context.primaryTextColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Error display at bottom
+                if (practiceManager.error != null)
+                  Positioned(
+                    bottom: 20,
+                    left: 24,
+                    right: 24,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              practiceManager.error!,
+                              style: const TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 12,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
         );
+      },
+    );
   }
 
   Widget _buildMoodButton({

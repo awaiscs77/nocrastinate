@@ -26,6 +26,10 @@ class MindPracticeManager extends ChangeNotifier {
   // Practice types constants
   static const String costBenefitType = 'cost_benefit';
   static const String whatIfChallengeType = 'what_if_challenge';
+  static const String gratitudeJournalType = 'gratitude_journal';
+  static const String growthMindsetType = 'growth_mindset';
+  static const String selfCompassionType = 'self_compassion';
+  static const String selfEfficacyType = 'self_efficacy';
 
   /// Start a new practice session
   Future<bool> startPractice({
@@ -151,6 +155,14 @@ class MindPracticeManager extends ChangeNotifier {
         return _getCostBenefitProgress();
       case whatIfChallengeType:
         return _getWhatIfChallengeProgress();
+      case gratitudeJournalType:
+        return _getGratitudeJournalProgress();
+      case growthMindsetType:
+        return _getGrowthMindsetProgress();
+      case selfCompassionType:
+        return _getSelfCompassionProgress();
+      case selfEfficacyType:
+        return _getSelfEfficacyProgress();
       default:
         return 0.0;
     }
@@ -205,6 +217,84 @@ class MindPracticeManager extends ChangeNotifier {
     return progress;
   }
 
+  /// Get gratitude journal progress
+  double _getGratitudeJournalProgress() {
+    double progress = 0.0;
+
+    // Grateful thing (50%)
+    if (_currentPracticeData['gratefulThing']?.toString().trim().isNotEmpty == true) {
+      progress += 0.5;
+    }
+
+    // Why grateful (50%)
+    if (_currentPracticeData['whyGrateful']?.toString().trim().isNotEmpty == true) {
+      progress += 0.5;
+    }
+
+    return progress;
+  }
+
+  /// Get growth mindset progress
+  double _getGrowthMindsetProgress() {
+    double progress = 0.0;
+
+    // Difficulty (33%)
+    if (_currentPracticeData['difficulty']?.toString().trim().isNotEmpty == true) {
+      progress += 0.33;
+    }
+
+    // Turn into opportunity (33%)
+    if (_currentPracticeData['opportunity']?.toString().trim().isNotEmpty == true) {
+      progress += 0.33;
+    }
+
+    // Past learning (34%)
+    if (_currentPracticeData['pastLearning']?.toString().trim().isNotEmpty == true) {
+      progress += 0.34;
+    }
+
+    return progress;
+  }
+
+  /// Get self compassion progress
+  double _getSelfCompassionProgress() {
+    double progress = 0.0;
+
+    // Self criticism (33%)
+    if (_currentPracticeData['selfCriticism']?.toString().trim().isNotEmpty == true) {
+      progress += 0.33;
+    }
+
+    // Emotion (33%)
+    if (_currentPracticeData['emotion']?.toString().trim().isNotEmpty == true) {
+      progress += 0.33;
+    }
+
+    // Kindness (34%)
+    if (_currentPracticeData['kindness']?.toString().trim().isNotEmpty == true) {
+      progress += 0.34;
+    }
+
+    return progress;
+  }
+
+  /// Get self efficacy progress
+  double _getSelfEfficacyProgress() {
+    double progress = 0.0;
+
+    // Doubt (50%)
+    if (_currentPracticeData['doubt']?.toString().trim().isNotEmpty == true) {
+      progress += 0.5;
+    }
+
+    // Past success (50%)
+    if (_currentPracticeData['pastSuccess']?.toString().trim().isNotEmpty == true) {
+      progress += 0.5;
+    }
+
+    return progress;
+  }
+
   /// Get current step description for UI
   String get currentStepDescription {
     if (_currentPracticeType == null) return '';
@@ -214,6 +304,14 @@ class MindPracticeManager extends ChangeNotifier {
         return _getCostBenefitStepDescription();
       case whatIfChallengeType:
         return _getWhatIfChallengeStepDescription();
+      case gratitudeJournalType:
+        return _getGratitudeJournalStepDescription();
+      case growthMindsetType:
+        return _getGrowthMindsetStepDescription();
+      case selfCompassionType:
+        return _getSelfCompassionStepDescription();
+      case selfEfficacyType:
+        return _getSelfEfficacyStepDescription();
       default:
         return '';
     }
@@ -240,6 +338,50 @@ class MindPracticeManager extends ChangeNotifier {
       return 'Describe the best outcome';
     } else if (_currentPracticeData['finalLikelihood'] == null) {
       return 'Re-rate the likelihood';
+    } else {
+      return 'Complete the practice';
+    }
+  }
+
+  String _getGratitudeJournalStepDescription() {
+    if (_currentPracticeData['gratefulThing']?.toString().trim().isEmpty != false) {
+      return 'Write what you\'re grateful for';
+    } else if (_currentPracticeData['whyGrateful']?.toString().trim().isEmpty != false) {
+      return 'Explain why it makes you grateful';
+    } else {
+      return 'Complete the practice';
+    }
+  }
+
+  String _getGrowthMindsetStepDescription() {
+    if (_currentPracticeData['difficulty']?.toString().trim().isEmpty != false) {
+      return 'Describe what you find difficult';
+    } else if (_currentPracticeData['opportunity']?.toString().trim().isEmpty != false) {
+      return 'Turn challenge into opportunity';
+    } else if (_currentPracticeData['pastLearning']?.toString().trim().isEmpty != false) {
+      return 'Reflect on past learning';
+    } else {
+      return 'Complete the practice';
+    }
+  }
+
+  String _getSelfCompassionStepDescription() {
+    if (_currentPracticeData['selfCriticism']?.toString().trim().isEmpty != false) {
+      return 'Describe self-criticism';
+    } else if (_currentPracticeData['emotion']?.toString().trim().isEmpty != false) {
+      return 'Recognize the emotion';
+    } else if (_currentPracticeData['kindness']?.toString().trim().isEmpty != false) {
+      return 'Show yourself kindness';
+    } else {
+      return 'Complete the practice';
+    }
+  }
+
+  String _getSelfEfficacyStepDescription() {
+    if (_currentPracticeData['doubt']?.toString().trim().isEmpty != false) {
+      return 'Describe your doubt';
+    } else if (_currentPracticeData['pastSuccess']?.toString().trim().isEmpty != false) {
+      return 'Recall past success';
     } else {
       return 'Complete the practice';
     }

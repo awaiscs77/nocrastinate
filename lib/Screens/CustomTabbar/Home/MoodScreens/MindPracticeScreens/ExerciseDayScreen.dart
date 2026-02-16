@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/GratitudeJournal/WhyMakesGratefulScreen.dart';
+import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/GratitudeJournal/WriteSomethingScreen.dart';
+import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/GrowthMindset/FindingDificultScreen.dart';
 import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/PlanActivityScreen.dart';
+import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/SelfCompassion/CritisizeYourselfScreen.dart';
+import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/SelfEfficacy/YouDoubtAbilityScreen.dart';
 import 'package:nocrastinate/Screens/CustomTabbar/Home/MoodScreens/MindPracticeScreens/WhatIfChallenge/WhatIfChallenge.dart';
 import 'package:nocrastinate/ThemeManager.dart';
 
@@ -256,7 +261,7 @@ class _ExerciseDayScreenState extends State<ExerciseDayScreen> {
                 : Text(
               hasCompletedDaily
                   ? "Great job! You've completed\nyour daily practice!".tr()
-                  : 'Plan one small action today\nto boost your mood!',
+                  : 'Plan one small action today\nto boost your mood!'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Poppins',
@@ -325,15 +330,64 @@ class _ExerciseDayScreenState extends State<ExerciseDayScreen> {
 
           // First horizontal image
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => WriteSomethingScreen(),
+                ),
+              );
+            },
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxWidth: screenWidth * 0.9,
                 maxHeight: screenWidth * 0.4,
               ),
-              child: SvgPicture.asset(
-                'assets/svg/cbt.svg',
-                fit: BoxFit.contain,
+              child: Stack(
+                children: [
+                  Image.asset(
+                    'assets/gratitude.png',
+                    fit: BoxFit.contain,
+                  ),
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.white,
+                                fontFamily: 'Raleway-Italic',
+                              ),
+                              children: [
+                                TextSpan(text: "Gratitude ".tr()),
+                                TextSpan(
+                                  text: "Journal".tr(),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                      fontSize: 20
+                                  ),
+                                ),
+                              ],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.visible,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -351,9 +405,61 @@ class _ExerciseDayScreenState extends State<ExerciseDayScreen> {
                       ),
                     );
                   },
-                  child: SvgPicture.asset(
-                    'assets/svg/cbt1.svg',
-                    fit: BoxFit.contain,
+                  child: Stack(
+                    children: [
+                      Image.asset(
+                        'assets/costBenefit.png',
+                        fit: BoxFit.contain,
+                      ),
+                      Positioned(
+                        top: 5,
+                        left: 5,
+                        right: 5,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Cost-benefit'.tr(),
+                                    style: TextStyle(
+                                      fontFamily: 'Raleway-Italic',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xFF1F1F1F),
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.visible,
+                                    softWrap: true,
+                                  ),
+                                  Text(
+                                    'Analysis'.tr(),
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1F1F1F),
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.visible,
+                                    softWrap: true,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: Color(0xFF1F1F1F),
+                              size: 24,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -361,12 +467,60 @@ class _ExerciseDayScreenState extends State<ExerciseDayScreen> {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-
-
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => CriticizeYourselfScreen(),
+                      ),
+                    );
                   },
-                  child: Image.asset(
-                    'assets/self_compression.png',
-                    fit: BoxFit.contain,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: screenWidth * 0.9,
+                      maxHeight: screenWidth * 0.4,
+                    ),
+                    child: Stack(
+                      children: [
+                        Image.asset(
+                          'assets/selfCompassion.png',
+                          fit: BoxFit.contain,
+                        ),
+                        Positioned(
+                          bottom: 5,
+                          right: 5,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Color(0xFF1F1F1F),
+                                      fontFamily: 'Raleway-Italic',
+                                    ),
+                                    children: [
+                                      TextSpan(text: "Self\n".tr()),
+                                      TextSpan(
+                                        text: "Compassion".tr(),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                          fontSize: 20,
+
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ),
+
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -388,9 +542,53 @@ class _ExerciseDayScreenState extends State<ExerciseDayScreen> {
                 maxWidth: screenWidth * 0.9,
                 maxHeight: screenWidth * 0.4,
               ),
-              child: Image.asset(
-                'assets/whatifChallenge.png',
-                fit: BoxFit.contain,
+              child: Stack(
+                children: [
+                  Image.asset(
+                    'assets/ifChallenge.png',
+                    fit: BoxFit.contain,
+                  ),
+                  Positioned(
+                    left: 16,
+                    top: 0,
+                    bottom: 0,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.white,
+                                fontFamily: 'Raleway-Italic',
+                              ),
+                              children: [
+                                TextSpan(text: '"What if" '.tr()),
+                                TextSpan(
+                                  text: "Challenge".tr(),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                      fontSize: 20
+                                  ),
+                                ),
+                              ],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.visible,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -400,21 +598,126 @@ class _ExerciseDayScreenState extends State<ExerciseDayScreen> {
           Row(
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Image.asset(
-                    'assets/growthMindset.png',
-                    fit: BoxFit.contain,
+                child:GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => FindingDifficultScreen(),
+                      ),
+                    );
+                  },
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: screenWidth * 0.9,
+                      maxHeight: screenWidth * 0.4,
+                    ),
+                    child: Stack(
+                      children: [
+                        Image.asset(
+                          'assets/growthMindset.png',
+                          fit: BoxFit.contain,
+                        ),
+                        Positioned(
+                          top: 16,
+                          left: 16,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Color(0xFF1F1F1F),
+                                      fontFamily: 'Raleway-Italic',
+                                    ),
+                                    children: [
+                                      TextSpan(text: "Growth\n".tr()),
+                                      TextSpan(
+                                        text: "Mindset".tr(),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Poppins',
+                                            fontSize: 20
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                color: Color(0xFF1F1F1F),
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               SizedBox(width: 20),
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
-                  child: Image.asset(
-                    'assets/selfEfficacy.png',
-                    fit: BoxFit.contain,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => YouDoubtAbilityScreen(),
+                      ),
+                    );
+                  },
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: screenWidth * 0.9,
+                      maxHeight: screenWidth * 0.4,
+                    ),
+                    child: Stack(
+                      children: [
+                        Image.asset(
+                          'assets/selfEfficacy.png',
+                          fit: BoxFit.contain,
+                        ),
+                        Positioned(
+                          bottom: 16,
+                          right: 16,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Color(0xFF1F1F1F),
+                                      fontFamily: 'Raleway-Italic',
+                                    ),
+                                    children: [
+                                      TextSpan(text: "Self\n".tr()),
+                                      TextSpan(
+                                        text: "Efficacy".tr(),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Poppins',
+                                            fontSize: 20
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ),
+
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

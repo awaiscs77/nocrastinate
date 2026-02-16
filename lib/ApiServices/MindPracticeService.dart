@@ -13,6 +13,10 @@ class MindPracticeService {
   static const String costBenefitType = 'cost_benefit';
   static const String whatIfChallengeType = 'what_if_challenge';
   static const String activityPlanType = 'activity_plan';
+  static const String gratitudeJournalType = 'gratitude_journal';
+  static const String growthMindsetType = 'growth_mindset';
+  static const String selfCompassionType = 'self_compassion';
+  static const String selfEfficacyType = 'self_efficacy';
 
   /// Get user's mind practices subcollection reference
   static CollectionReference? _getUserPracticesCollection() {
@@ -260,6 +264,166 @@ class MindPracticeService {
     }
   }
 
+  /// Save Gratitude Journal practice (legacy method - now uses session-based approach)
+  static Future<String?> saveGratitudeJournalPractice({
+    required String gratefulThing,
+    required String whyGrateful,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final practicesCollection = _getUserPracticesCollection();
+      if (practicesCollection == null) throw Exception('Could not get practices collection');
+
+      final practiceData = {
+        'practiceType': gratitudeJournalType,
+        'timestamp': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'data': {
+          'gratefulThing': gratefulThing.trim(),
+          'whyGrateful': whyGrateful.trim(),
+        },
+        'completed': true,
+        'status': 'completed',
+        'completedAt': FieldValue.serverTimestamp(),
+        'date': _getDateString(DateTime.now()),
+      };
+
+      final docRef = await practicesCollection.add(practiceData);
+
+      // Update user stats
+      await _updateUserStats(user.uid, gratitudeJournalType);
+
+      return docRef.id;
+    } catch (e) {
+      print('Error saving Gratitude Journal practice: $e');
+      return null;
+    }
+  }
+
+  /// Save Growth Mindset practice (legacy method - now uses session-based approach)
+  static Future<String?> saveGrowthMindsetPractice({
+    required String difficulty,
+    required String opportunity,
+    required String pastLearning,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final practicesCollection = _getUserPracticesCollection();
+      if (practicesCollection == null) throw Exception('Could not get practices collection');
+
+      final practiceData = {
+        'practiceType': growthMindsetType,
+        'timestamp': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'data': {
+          'difficulty': difficulty.trim(),
+          'opportunity': opportunity.trim(),
+          'pastLearning': pastLearning.trim(),
+        },
+        'completed': true,
+        'status': 'completed',
+        'completedAt': FieldValue.serverTimestamp(),
+        'date': _getDateString(DateTime.now()),
+      };
+
+      final docRef = await practicesCollection.add(practiceData);
+
+      // Update user stats
+      await _updateUserStats(user.uid, growthMindsetType);
+
+      return docRef.id;
+    } catch (e) {
+      print('Error saving Growth Mindset practice: $e');
+      return null;
+    }
+  }
+
+  /// Save Self Compassion practice (legacy method - now uses session-based approach)
+  static Future<String?> saveSelfCompassionPractice({
+    required String selfCriticism,
+    required String emotion,
+    required String kindness,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final practicesCollection = _getUserPracticesCollection();
+      if (practicesCollection == null) throw Exception('Could not get practices collection');
+
+      final practiceData = {
+        'practiceType': selfCompassionType,
+        'timestamp': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'data': {
+          'selfCriticism': selfCriticism.trim(),
+          'emotion': emotion.trim(),
+          'kindness': kindness.trim(),
+        },
+        'completed': true,
+        'status': 'completed',
+        'completedAt': FieldValue.serverTimestamp(),
+        'date': _getDateString(DateTime.now()),
+      };
+
+      final docRef = await practicesCollection.add(practiceData);
+
+      // Update user stats
+      await _updateUserStats(user.uid, selfCompassionType);
+
+      return docRef.id;
+    } catch (e) {
+      print('Error saving Self Compassion practice: $e');
+      return null;
+    }
+  }
+
+  /// Save Self Efficacy practice (legacy method - now uses session-based approach)
+  static Future<String?> saveSelfEfficacyPractice({
+    required String doubt,
+    required String pastSuccess,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final practicesCollection = _getUserPracticesCollection();
+      if (practicesCollection == null) throw Exception('Could not get practices collection');
+
+      final practiceData = {
+        'practiceType': selfEfficacyType,
+        'timestamp': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'data': {
+          'doubt': doubt.trim(),
+          'pastSuccess': pastSuccess.trim(),
+        },
+        'completed': true,
+        'status': 'completed',
+        'completedAt': FieldValue.serverTimestamp(),
+        'date': _getDateString(DateTime.now()),
+      };
+
+      final docRef = await practicesCollection.add(practiceData);
+
+      // Update user stats
+      await _updateUserStats(user.uid, selfEfficacyType);
+
+      return docRef.id;
+    } catch (e) {
+      print('Error saving Self Efficacy practice: $e');
+      return null;
+    }
+  }
+
   /// Save Activity Plan practice (legacy method - now uses session-based approach)
   static Future<String?> saveActivityPlanPractice({
     required String activityPlan,
@@ -454,6 +618,10 @@ class MindPracticeService {
       'costBenefitCount': 0,
       'whatIfChallengeCount': 0,
       'activityPlanCount': 0,
+      'gratitudeJournalCount': 0,
+      'growthMindsetCount': 0,
+      'selfCompassionCount': 0,
+      'selfEfficacyCount': 0,
       'currentStreak': 0,
       'longestStreak': 0,
       'lastPracticeDate': null,
@@ -494,6 +662,14 @@ class MindPracticeService {
           statsData['whatIfChallengeCount'] = (statsData['whatIfChallengeCount'] ?? 0) + 1;
         } else if (practiceType == activityPlanType) {
           statsData['activityPlanCount'] = (statsData['activityPlanCount'] ?? 0) + 1;
+        } else if (practiceType == gratitudeJournalType) {
+          statsData['gratitudeJournalCount'] = (statsData['gratitudeJournalCount'] ?? 0) + 1;
+        } else if (practiceType == growthMindsetType) {
+          statsData['growthMindsetCount'] = (statsData['growthMindsetCount'] ?? 0) + 1;
+        } else if (practiceType == selfCompassionType) {
+          statsData['selfCompassionCount'] = (statsData['selfCompassionCount'] ?? 0) + 1;
+        } else if (practiceType == selfEfficacyType) {
+          statsData['selfEfficacyCount'] = (statsData['selfEfficacyCount'] ?? 0) + 1;
         }
 
         // Update streak
@@ -557,6 +733,14 @@ class MindPracticeService {
           statsData['whatIfChallengeCount'] = ((statsData['whatIfChallengeCount'] ?? 1) - 1).clamp(0, double.infinity).toInt();
         } else if (practiceType == activityPlanType) {
           statsData['activityPlanCount'] = ((statsData['activityPlanCount'] ?? 1) - 1).clamp(0, double.infinity).toInt();
+        } else if (practiceType == gratitudeJournalType) {
+          statsData['gratitudeJournalCount'] = ((statsData['gratitudeJournalCount'] ?? 1) - 1).clamp(0, double.infinity).toInt();
+        } else if (practiceType == growthMindsetType) {
+          statsData['growthMindsetCount'] = ((statsData['growthMindsetCount'] ?? 1) - 1).clamp(0, double.infinity).toInt();
+        } else if (practiceType == selfCompassionType) {
+          statsData['selfCompassionCount'] = ((statsData['selfCompassionCount'] ?? 1) - 1).clamp(0, double.infinity).toInt();
+        } else if (practiceType == selfEfficacyType) {
+          statsData['selfEfficacyCount'] = ((statsData['selfEfficacyCount'] ?? 1) - 1).clamp(0, double.infinity).toInt();
         }
 
         // Note: We don't recalculate streak on deletion as it would be complex
