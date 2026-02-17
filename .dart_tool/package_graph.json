@@ -20,6 +20,7 @@
         "flutter",
         "flutter_local_notifications",
         "flutter_svg",
+        "flutter_timezone",
         "get",
         "google_sign_in",
         "home_widget",
@@ -66,6 +67,16 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "flutter_timezone",
+      "version": "5.0.1",
+      "dependencies": [
+        "equatable",
+        "flutter",
+        "flutter_web_plugins",
+        "meta"
       ]
     },
     {
@@ -479,6 +490,21 @@
       ]
     },
     {
+      "name": "flutter_web_plugins",
+      "version": "0.0.0",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "equatable",
+      "version": "2.0.8",
+      "dependencies": [
+        "collection",
+        "meta"
+      ]
+    },
+    {
       "name": "in_app_purchase_storekit",
       "version": "0.4.7",
       "dependencies": [
@@ -596,13 +622,6 @@
         "path_provider",
         "plugin_platform_interface",
         "uuid"
-      ]
-    },
-    {
-      "name": "flutter_web_plugins",
-      "version": "0.0.0",
-      "dependencies": [
-        "flutter"
       ]
     },
     {
