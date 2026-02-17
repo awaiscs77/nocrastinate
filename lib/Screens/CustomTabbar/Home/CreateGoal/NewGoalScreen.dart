@@ -549,7 +549,6 @@ class _NewGoalScreenState extends State<NewGoalScreen> {
         await _notificationService.cancelGoalNotifications(goalId);
 
         Navigator.pop(context);
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Goal deleted successfully'), backgroundColor: Colors.green),
         );
